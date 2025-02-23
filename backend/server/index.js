@@ -11,13 +11,8 @@ const JWT_SECRET = "Lumaa";
 app.use(cors());
 app.use(express.json());
 
-// TODO: 
-// 1. Separate files
-// 2. Frontend!!
-// 3. Move files around and create new folders to make it easier to navigate
-
-// User Routes -------------------------------------------------------------------------------------------
-// Create a new user - implement hashing for password using bcrypt
+// User Routes
+// Create a new user
 app.post("/auth/register", async (req, res) => {
     try {
         const { username, user_password } = req.body;
@@ -25,13 +20,15 @@ app.post("/auth/register", async (req, res) => {
         const newUser = await pool.query(
             "INSERT INTO Users (username, user_password) VALUES ($1,$2) RETURNING *", [username, hashedPassword]
         );
-        res.json(newUser.rows);
+        const token = jwt.sign(
+            { user_id: newUser.rows[0].user_id, username: newUser.rows[0].username }, JWT_SECRET);
+        res.json({ token, user_id: newUser.rows[0].user_id });
     } catch (e) {
         console.error(e.message);
    }
 });
 
-// Login user, return a JWT
+// Login user
 app.post("/auth/login", async (req, res) => {
     try {
         const { username, user_password } = req.body;
@@ -47,7 +44,7 @@ app.post("/auth/login", async (req, res) => {
         
         const token = jwt.sign(
             { user_id: user.rows[0].user_id, username: user.rows[0].username }, JWT_SECRET);
-        res.json({ token });
+        res.json({ token, user_id: user.rows[0].user_id });
     } catch (e) {
         console.error(e.message);
    }
@@ -75,14 +72,14 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 
-// Task Routes -------------------------------------------------------------------------------------------
+// Task Routes 
 // Create a new task
 app.post("/tasks", async (req, res) => {
     try {
-        const { title, status } = req.body;
+        const { title, task_description, status, user_id } = req.body;
         const newTask = await pool.query(
-            "INSERT INTO Tasks (title,is_complete) VALUES($1,$2) RETURNING *",
-            [title, status]
+            "INSERT INTO Tasks (title,task_description,is_complete,user_id) VALUES($1,$2,$3,$4) RETURNING *",
+            [title, task_description, status,user_id]
         );
         res.json(newTask.rows[0]);
     } catch (e) {
@@ -90,10 +87,11 @@ app.post("/tasks", async (req, res) => {
     }
 });
 
-// Get all tasks
-app.get("/tasks", async (req, res) => {
+// Get all tasks for a specific user_id
+app.get("/tasks/:user_id", async (req, res) => {
     try {
-        const allTasks = await pool.query("SELECT * FROM Tasks");
+        const { user_id } = req.params;
+        const allTasks = await pool.query("SELECT * FROM Tasks WHERE user_id = $1", [user_id]);
         res.json(allTasks.rows);
     } catch (e) {
         console.error(e.message);
