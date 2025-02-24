@@ -2,5 +2,17 @@
     "files.associations": {
         "*.ttml": "xml",
         "*.ttss": "css"
-    }
+    },
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "db",
+            "database": "TaskManagement",
+            "username": "postgres",
+            "password": "password"
+        }
+    ]
 }
