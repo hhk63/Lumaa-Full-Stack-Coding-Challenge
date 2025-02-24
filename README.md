@@ -21,6 +21,5 @@ To start the backend, navigate to the server folder, which is located in the bac
 ### Frontend
 To start the frontend, navigate to the task-management folder, which is located in the frontend folder. Once you are in the task-management folder, run the command `npm start`. This command will start the frontend.
 
-### Short Demo Link
 Demo video is located in DEMO.md file.
 ---
